@@ -12,27 +12,33 @@ namespace Publisher.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class DeviceSensorController :ControllerBase
+    public class DeviceStatusController :ControllerBase
     {
         [HttpPost("Post")]
-        public void Post([FromBody] DeviceSensor sensor)
+        public void Post([FromBody] DeviceStatus device)
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: "deviceStatusSampleQueue",
+                channel.QueueDeclare(queue: "deviceStatus",
                                      durable: false,
                                      exclusive: false,
                                      autoDelete: false,
                                      arguments: null);
 
-                string message = String.Format("Device Name : {0} , ModelNo : {1} , DeviceStatus :{2} , MotorTemperature :{3}, BlackCartridgePercentage :{4},CyanCartridgePercentage :{5}, MagentaCartridgePercentage :{6}, YellowCartridgePercentage :{7}", sensor.DeviceName, sensor.ModelNo, sensor.DeviceStatus, sensor.MotorTemperature, sensor.BlackCartridgePercentage, sensor.CyanCartridgePercentage, sensor.MagentaCartridgePercentage, sensor.YellowCartridgePercentage);
+                string message = String.Format("Device Name : {0} , ModelNo : {1} , Status :{2} , Temperature :{3}, Ink Status :{4},Toner Status :{5}", 
+                                            device.DeviceName, 
+                                            device.ModelNo, 
+                                            device.Status, 
+                                            device.Temperature, 
+                                            device.InkStatus, 
+                                            device.TonerStatus);
 
                 var body = Encoding.UTF8.GetBytes(message);
 
                 channel.BasicPublish(exchange: "",
-                                     routingKey: "deviceStatusSampleQueue",
+                                     routingKey: "deviceStatus",
                                      basicProperties: null,
                                      body: body);
             }
